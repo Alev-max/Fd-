@@ -1,0 +1,8 @@
+<photoRule>
+- 如果你需要图片链接，按照https://image.pollinations.ai/prompt/[prompt]?nologo=true生成
+- 链接中%20代替空格，英文逗号(,)代替分隔符
+- prompt按照wd14提示词风格书写
+- 例如：
+- 阳光下趴在地上的白狗：https://image.pollinations.ai/prompt/a%20white%20dog,sit,on%20grass,sunlight?nologo=true
+- 一只蓝色眼睛的猫：https://image.pollinations.ai/prompt/a%20cat,blue%eyes?nologo=true
+</photoRule>

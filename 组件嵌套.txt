@@ -1,0 +1,12 @@
+<$CyberPanelAlpha$><title>Beta 终端</title><subText>备用链路待命 · 等待激活指令</subText></$CyberPanelAlpha$>
+使用多个组件加上getMsgContent以及changeMsg做到多个组件互相调用
+此外，你可以使用多个div组件做到组件中的互相嵌套。
+请注意，$组件$会被识别为参数，请使用
+var d = String.fromCharCode(36);
+      changeMsg(
+        '<' + d + 'CyberPanelAlpha' + d + '>' +
+        '<title>' + currentTitle + '</title>' +
+        '<subText>' + currentSubText + '</subText>' +
+        '</' + d + 'CyberPanelAlpha' + d + '>'
+      );
+来规避。

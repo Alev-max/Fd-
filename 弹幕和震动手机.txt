@@ -1,0 +1,32 @@
+当神圣会话或ai回复完毕时，若最后一个AI回复消息内存在<buibui>弹幕内容</buibui>，则会在窗口飘过弹幕
+
+<buibui>弹幕内容</buibui>
+<buibui>弹幕内容</buibui>
+<buibui>弹幕内容</buibui>
+<buibui>弹幕内容</buibui>
+
+为buibui标签添加color属性支持
+
+  - 更新了隐藏buibui标签的正则表达式，支持 <buibui color="xxx"> 格式
+  - 修改了 BuiBuiDanmaku.show() 函数支持 color 参数
+  - 修改了 BuiBuiDanmaku.extractAndShow() 函数解析 color 属性
+  - 用法示例: 
+<buibui color="red">文字</buibui> 
+<buibui color="#ff0000">文字</buibui>
+
+<vibe> 标签使用格式
+
+  <vibe>强度</vibe>
+  <vibe>强度,时长</vibe>
+  <vibe>强度,时长,设备索引</vibe>
+
+  - 强度: 0-100 整数 或 0.0-1.0 小数
+  - 时长: 毫秒数，默认1000ms
+  - 设备索引: 可选，指定特定设备
+
+  示例：
+  - <vibe>50</vibe> - 50%强度，1秒
+  - <vibe>0.8,2000</vibe> - 80%强度，2秒
+  - <vibe>100,500,0</vibe> - 100%强度，0.5秒，设备0
+
+请使用编辑模式查看
