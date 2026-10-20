@@ -1,0 +1,168 @@
+在故事线编辑内增加组件Tab，组件名称为唯一调用来源，支持html和div
+组件的调用方法为<$组件名$></$组件名$>
+组件内传入变量的方法为：
+<$组件名$>
+<变量1></变量1>
+<变量2></变量2>
+</$组件名$>
+然后在组件编辑里面可以直接用$变量1$来调用该变量（也就是一种正则解析）
+组件可以导出和导入方便分享。
+下面为渲染效果：
+<$unlock$>
+<文本>此处为传入的文本变量</文本>
+</$unlock$>
+
+请打开编辑模式查看
+下面代码块内为组件内容示例：
+```
+你可以只写<div>和<script>和<style>标签，他会自动识别并且整合到一个组件内。
+如下面一个简单的状态栏组件：
+<div class="weather-card">
+  <div class="weather-header">
+    <span class="location">CHRONO</span>
+    <span class="location-sub">SKY</span>
+  </div>
+  
+  <div class="weather-time">$time$</div>
+  
+  <div class="weather-condition">$weather$</div>
+  
+  <div class="weather-atmosphere">
+    <span class="atmos-label">ATMOSPHERE</span>
+    <div class="atmos-desc">$desc$</div>
+  </div>
+</div>
+
+<style>
+.weather-card {
+  width: 360px;
+  padding: 24px 20px;
+  background: linear-gradient(145deg, #1a1f2e, #0e121f);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.7);
+}
+
+.weather-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.location {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #b3c7ff, #7d9eff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.location-sub {
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.6;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.weather-time {
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 12px;
+  color: #eef4ff;
+  text-shadow: 0 0 15px rgba(110, 160, 255, 0.5);
+}
+
+.weather-condition {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccdcff;
+}
+
+.weather-atmosphere {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.atmos-label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  opacity: 0.55;
+  text-transform: uppercase;
+}
+
+.atmos-desc {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #c2d1ff;
+  font-style: italic;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  word-break: break-word;
+}
+</style>
+```
+下面为使用示例（我将名称定义为了backgound）
+<$background$>
+<time>13:00:12</time>
+<weather>多云</weather>
+<desc>空气中漂浮着茉莉花和雨水的气味</desc>
+</$background$>
+
+还有：
+<$地图组件$></$地图组件$>
+
+事实上，这里有一些可以桥接的函数：
+| 函数 | 效果 |
+| :--- | :--- |
+| fillInput("文字") | 填入聊天框（不发送） |
+| copyText("文字") | 复制到剪贴板 |
+| toast("提示") | 弹出提示 |
+
+消息相关桥接函数：
+appendMsg(text)：把参数追加到“当前组件所在的这条助手消息”末尾，会触发类似Achievement之类的特效，会被保存
+
+changeMsg(text)：直接“当前组件所在的这条助手消息”替换为参数文本，会被保存
+
+tempAppendMsg(text) 推荐使用，不会影响原本消息
+tempChangeMsg(text)
+以上temp开头的命令
+执行时只改本地消息并触发特效，不走保存接口，刷新后会消失。
+再次触发消息改写命令时，会先清掉上一条 temp 内容再执行新命令（上一条 temp 会消失）
+还有getMsgContent()，不传参，可以获得组件所在消息的内容，你可以获取后在组件内进行正则匹配
+
+此外，引入saveToLocal(variable, value)和readFromLocal(variable)
+第一个能够将数据临时存储到本地，第二个能够从本地读取数据
+例如：
+saveToLocal("myKey", "hello")
+fillInput(readFromLocal("myKey"))
+如果是 iframe/raw JS 脚本，请用 await：
+await saveToLocal("myKey", "hello")
+const v = await readFromLocal("myKey")
+
+增加获取用户头像的函数：
+getUserAvatar()，可用作参数，下面为例子：
+setValue('[data-avatar]', getUserAvatar())	
+函数作用为读取当前登录用户头像地址字符串，可能是 http/https、站内路径、blob: 或 data:，适合传给图片或样式相关函数
+
+下面是个用来跑团用的组件
+<$Dice$>
+  <id>luck_test</id>
+  <sides>20</sides>
+  <label>运气与直觉检定</label>
+  <options>
+    1-5:运气极差，看来今天不宜出门 |
+    6-15:平平无奇，一切都在预料之中 |
+    16-20:鸿运当头！你感觉到充满了力量！
+  </options>
+</$Dice$>
