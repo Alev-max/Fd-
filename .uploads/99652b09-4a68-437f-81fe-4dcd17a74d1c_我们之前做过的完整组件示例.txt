@@ -1,0 +1,129 @@
+<div class="studio" id="studio">
+
+<div class="photo">
+<img src="$image$">
+<div class="overlay"></div>
+
+<div class="live">● LIVE</div>
+
+<div class="frame">
+<div class="time">$time$</div>
+<div class="date">$date$</div>
+</div>
+
+<div class="serial">Leica Collection · #$index$</div>
+
+</div>
+
+<div class="sheet">
+
+<div class="title">Photography Archive</div>
+
+<div class="subtitle">Captured Memory</div>
+
+<div class="memo">$memo$</div>
+
+<div class="chips">
+<span>📍 $location$</span>
+<span>📷 $lens$</span>
+<span>ISO $iso$</span>
+<span>🖼 Archive</span>
+</div>
+
+<div class="grid">
+<div class="box"><b>Camera</b><small>Leica M11</small></div>
+<div class="box"><b>Album</b><small>Roaming</small></div>
+<div class="box"><b>ID</b><small>#$index$</small></div>
+<div class="box"><b>Status</b><small>LIVE</small></div>
+</div>
+
+<div class="bar">
+<button id="like" data-component-trigger="1">♡</button>
+<button id="theme" data-component-trigger="1">Theme</button>
+<button id="detailBtn" data-component-trigger="1">Details</button>
+</div>
+
+<div id="detail" class="detail">
+
+<div class="group">
+<div class="head">PHOTO INFORMATION</div>
+
+<div class="row"><span>Location</span><span>$location$</span></div>
+<div class="row"><span>Lens</span><span>$lens$</span></div>
+<div class="row"><span>ISO</span><span>$iso$</span></div>
+<div class="row"><span>Date</span><span>$date$</span></div>
+<div class="row"><span>Time</span><span>$time$</span></div>
+<div class="row"><span>Collection</span><span>Roaming</span></div>
+</div>
+
+<div class="journal">
+<div class="journalTitle">FIELD NOTE</div>
+<div class="journalText">$memo$</div>
+</div>
+
+</div>
+
+</div>
+
+<style>
+*{box-sizing:border-box}
+.studio{width:380px;margin:18px auto;background:#fdfdfd;border-radius:30px;overflow:hidden;box-shadow:0 22px 70px rgba(0,0,0,.18);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#1d1d1f}
+.studio.dark{background:#151515;color:#f5f5f5}
+.photo{position:relative;height:300px;background:#111}
+.photo img{width:100%;height:100%;display:block;object-fit:cover}
+.overlay{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to top,rgba(0,0,0,.78),transparent)}
+.live{position:absolute;left:18px;top:18px;background:#ff3b30;color:#fff;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.frame{position:absolute;left:20px;bottom:20px;padding:14px 18px;border-radius:18px;background:rgba(255,255,255,.16);backdrop-filter:blur(14px);color:#fff}
+.time{font-size:32px;font-weight:700}
+.date{font-size:12px;opacity:.95}
+.serial{position:absolute;right:18px;top:18px;background:rgba(255,255,255,.9);padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.sheet{padding:22px}
+.title{font-size:30px;font-weight:700}
+.subtitle{margin-top:4px;color:#8a8a8a;font-size:13px;letter-spacing:1px}
+.memo{margin-top:14px;line-height:1.9;white-space:pre-wrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chips span{background:#efefef;padding:6px 10px;border-radius:999px;font-size:12px}
+.studio.dark .chips span{background:#2b2b2b}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
+.box{background:#f5f5f5;padding:14px;border-radius:16px}
+.studio.dark .box{background:#232323}
+.box b{display:block;font-size:12px}
+.box small{display:block;margin-top:6px;color:#777}
+.studio.dark .box small{color:#bbb}
+.bar{display:flex;gap:10px;margin-top:20px}
+.bar button{flex:1;height:44px;border:none;border-radius:14px;background:#111;color:#fff}
+.detail{display:none;margin-top:22px}
+.head{font-size:11px;letter-spacing:2px;color:#999;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #ececec}
+.studio.dark .row{border-color:#343434}
+.journal{margin-top:20px;padding:16px;border-radius:18px;background:#f7f7f7}
+.studio.dark .journal{background:#242424}
+.journalTitle{font-size:11px;letter-spacing:2px;color:#888;margin-bottom:10px}
+.journalText{line-height:1.9;white-space:pre-wrap}
+</style>
+
+<script>
+const studio=document.getElementById("studio");
+const detail=document.getElementById("detail");
+const btn=document.getElementById("detailBtn");
+const like=document.getElementById("like");
+const theme=document.getElementById("theme");
+let opened=false,liked=false,dark=false;
+btn.onclick=function(e){
+e.stopPropagation();
+opened=!opened;
+detail.style.display=opened?"block":"none";
+btn.textContent=opened?"Close":"Details";
+};
+like.onclick=function(e){
+e.stopPropagation();
+liked=!liked;
+like.textContent=liked?"♥":"♡";
+};
+theme.onclick=function(e){
+e.stopPropagation();
+dark=!dark;
+if(dark){studio.classList.add("dark");theme.textContent="Light";}
+else{studio.classList.remove("dark");theme.textContent="Theme";}
+};
+</script>
