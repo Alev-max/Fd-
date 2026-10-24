@@ -1,0 +1,41 @@
+请使用编辑消息模式查看
+
+`<jumps>` 标签 (Jump Scare / 突发惊吓)
+
+该标签用于在AI回复中插入突发惊吓效果（如恐怖游戏或万圣节主题）。它神圣合了图像、文字、音效和CSS动画。
+
+#### **基础语法**
+
+在AI的回复中直接插入以下单标签：
+
+<jumps src="图片链接" text="显示的文字" se="音效链接" time=持续时间(毫秒)>
+
+#### **参数详解**
+
+| 参数 | 类型 | 说明 | 示例 |
+| --- | --- | --- | --- |
+| **src** | String | 惊吓时弹出的图片URL地址。 | `src="https://example.com/ghost.jpg"` |
+| **text** | String | 伴随图片出现的文字，会有脉冲(pulse)动画效果。 | `text="抓到你了！"` |
+| **se** | String | (Sound Effect) 惊吓时的音效URL地址。 | `se="https://example.com/scream.mp3"` |
+| **time** | Number | 惊吓效果持续的时间，单位为毫秒(ms)。 | `time=2000` (即2秒) |
+
+#### **效果表现**
+
+* **视觉：** 触发CSS动画，包含淡入 (fade-in) 和震动 (shake) 效果。
+* **听觉：** 播放指定的音效。
+* **触发机制：** 代码显示它会在会话加载时的最后一条AI消息上触发。
+
+#### **使用示例**
+
+```html
+我感觉身后有人...
+<jumps src="scary_face.png" text="BOO!" se="scream.mp3" time=3000>
+```
+以下为成就组件格式
+Achievement支持两个属性，分别是title（标题）和detail（描述）
+**具体使用方法请点击编辑消息查看！***
+<Achievement title="标题" detail="描述">成就名</Achievement>
+如果不编写title则默认显示Achievement Unlocked！
+<Achievement detail="描述">成就名</Achievement>
+如果不编写detail则不显示描述
+<Achievement>成就名</Achievement>
