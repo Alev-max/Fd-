@@ -1,116 +1,30 @@
-<div class="perm" id="permRoot" data-os="android">
-<div class="perm-wall"></div>
-<div class="perm-home"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-<div class="perm-status"><span id="permClock">--:--</span><span class="perm-si"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="perm-batt"></i></span></div>
-<div class="perm-toast" id="permToast"></div>
-<div class="perm-dim" id="permDim"></div>
-<div class="perm-dlg" id="permDlg"><div class="dlg-in">
-<div class="dlg-app"><span class="dlg-appic"></span><span id="dlgAppName">系统服务</span></div>
-<div class="dlg-ic"><svg id="icCam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="19" height="13" rx="2.5"/><circle cx="12" cy="12.5" r="4"/><path d="M8 6l1.4-2.4h5.2L16 6"/></svg><svg id="icMic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg><svg id="icLoc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.4"/></svg></div>
-<div class="dlg-title" id="dlgTitle"></div>
-<div class="dlg-text" id="dlgText"></div>
-<div class="dlg-btns"><button class="deny" id="pDeny">不允许</button><button class="allow" id="pAllow">允许</button></div>
-</div></div>
-<div class="perm-set" id="permSet"><div class="set-head">系统权限</div><div class="set-sub">『<span id="setAppName">系统服务</span>』已获得以下权限</div>
-<ul><li>摄像头<b>已允许</b></li><li>麦克风<b>已允许</b></li><li>位置<b>已允许</b></li><li class="warn">「它」<b>正在访问此设备</b></li></ul>
-<p class="set-end" id="setEnd"></p></div>
-<div class="perm-data"><span id="pSrc">$来源$</span><span id="pEnd">$结语$</span></div>
+<div class="apd" id="apdRoot">
+<div class="apd-scrim" id="apdScrim"></div>
+<div class="apd-dlg" id="apdDlg">
+<div class="apd-body">
+<span class="apd-ic"><svg id="apIc0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h3l1.6-2.4h6.8L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="12.6" r="3.6"/></svg><svg id="apIc1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg><svg id="apIc2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.4"/></svg><svg id="apIc3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg></span>
+<div class="apd-title" id="apdTitle"></div>
+</div>
+<div class="apd-btns"><button class="deny" id="apdDeny">取消</button><button class="allow" id="apdAllow">允许</button></div>
+</div>
+<div class="apd-data"><span id="aSrc">$来源$</span><span id="aEnd">$结语$</span></div>
 </div>
 <style>
-.perm{position:relative;width:100%;aspect-ratio:720/1000;container-type:size;overflow:hidden;border-radius:12px;background:#000;font-family:"PingFang SC","Microsoft YaHei",sans-serif;user-select:none;-webkit-user-select:none}
-.perm *,.perm *::before,.perm *::after{box-sizing:border-box}
-.perm button{font-family:inherit;cursor:pointer}
-.perm-wall{position:absolute;inset:0;background:linear-gradient(165deg,#0f1428,#141c3c 45%,#1a1230);transition:filter .6s}
-[data-os="ios"] .perm-wall{background:linear-gradient(165deg,#e9eef4,#cfd9e6 55%,#b9c6da)}
-[data-os="win"] .perm-wall{background:linear-gradient(150deg,#0a2f52,#0d3f6e 50%,#07223d)}
-.perm.done .perm-wall{filter:brightness(.5) saturate(.55)}
-.perm-home{position:absolute;left:9cqw;right:9cqw;top:13cqh;display:grid;grid-template-columns:repeat(4,1fr);gap:4cqh 5cqw;filter:blur(1px);opacity:.5;transition:opacity .6s}
-.perm.done .perm-home{opacity:.14}
-.perm-home i{aspect-ratio:1;border-radius:26%;display:block}
-.perm-home i:nth-child(1){background:linear-gradient(135deg,#5b8def,#8fb4ff)}
-.perm-home i:nth-child(2){background:linear-gradient(135deg,#ef8f5b,#ffd0a8)}
-.perm-home i:nth-child(3){background:linear-gradient(135deg,#5bc48f,#a8ffd0)}
-.perm-home i:nth-child(4){background:linear-gradient(135deg,#c45bef,#f0a8ff)}
-.perm-home i:nth-child(5){background:linear-gradient(135deg,#ef5b5b,#ffb0a8)}
-.perm-home i:nth-child(6){background:linear-gradient(135deg,#5bc4ef,#a8e4ff)}
-.perm-home i:nth-child(7){background:linear-gradient(135deg,#efc45b,#fff0a8)}
-.perm-home i:nth-child(8){background:linear-gradient(135deg,#8f8fa8,#c9c9de)}
-.perm-home i:nth-child(9){background:linear-gradient(135deg,#4a6ea8,#7ba6dd)}
-.perm-home i:nth-child(10){background:linear-gradient(135deg,#a85b7a,#e0a8c0)}
-.perm-home i:nth-child(11){background:linear-gradient(135deg,#5ba87a,#a8e0c0)}
-.perm-home i:nth-child(12){background:linear-gradient(135deg,#a88f5b,#e0d0a8)}
-[data-os="win"] .perm-home{display:none}
-.perm-status{position:absolute;top:0;left:0;right:0;height:5.6cqh;display:flex;align-items:center;justify-content:space-between;padding:0 4.4cqw;color:#fff;font-size:2cqh;z-index:6;letter-spacing:.1cqh}
-[data-os="ios"] .perm-status{color:#1c1c1e;font-weight:600}
-[data-os="win"] .perm-status{top:auto;bottom:0;height:6.4cqh;background:rgba(16,26,40,.92);justify-content:flex-end;font-size:2cqh;letter-spacing:.05cqh}
-.perm-si{display:flex;gap:.5cqw;align-items:center}
-.perm-si .b1,.perm-si .b2,.perm-si .b3,.perm-si .b4{width:.95cqw;background:currentColor;border-radius:1px;display:block}
-.perm-si .b1{height:1.1cqh}
-.perm-si .b2{height:1.5cqh}
-.perm-si .b3{height:1.9cqh}
-.perm-si .b4{height:2.3cqh}
-.perm-batt{width:4.8cqw;height:2.4cqh;border:1px solid currentColor;border-radius:.6cqh;position:relative;display:block}
-.perm-batt::before{content:"";position:absolute;right:-1.5cqw;top:28%;bottom:28%;width:1.1cqw;background:currentColor;border-radius:1px}
-.perm-batt::after{content:"";position:absolute;left:.35cqw;top:.35cqh;bottom:.35cqh;width:72%;background:currentColor;border-radius:.35cqh}
-.perm-toast{position:absolute;left:50%;bottom:10cqh;transform:translate(-50%,2cqh);background:rgba(18,20,26,.93);color:#eee;font-size:2cqh;padding:1.5cqh 3.6cqw;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9;max-width:88%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.perm-toast.on{opacity:1;transform:translate(-50%,0)}
-.perm-dim{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .25s;z-index:7;pointer-events:none}
-.perm-dim.on{opacity:1}
-.perm-dlg{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.92);width:82cqw;background:#fff;color:#111;border-radius:3cqh;box-shadow:0 4cqh 12cqh rgba(0,0,0,.38);opacity:0;z-index:8;pointer-events:none;transition:opacity .18s,transform .18s}
-.perm-dlg.pop{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
-.perm-dlg.out{opacity:0;transform:translate(-50%,-52%) scale(.95)}
-.perm-dlg.shake{animation:pShake .5s ease}
-@keyframes pShake{0%,100%{transform:translate(-50%,-50%) scale(1)}20%{transform:translate(calc(-50% - 1.1cqw),-50%) scale(1)}40%{transform:translate(calc(-50% + 1.1cqw),-50%) scale(1)}60%{transform:translate(calc(-50% - .6cqw),-50%) scale(1)}80%{transform:translate(calc(-50% + .6cqw),-50%) scale(1)}}
-.dlg-in{padding:3cqh 5cqw 0}
-.dlg-app{display:flex;align-items:center;gap:2cqw;font-size:2.1cqh;color:#666;margin-bottom:1.6cqh}
-.dlg-appic{width:3.8cqh;height:3.8cqh;border-radius:30%;background:linear-gradient(135deg,#3b7bd4,#75a7f0);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);flex:0 0 auto}
-[data-os="ios"] .dlg-app{display:none}
-.dlg-ic{display:flex;justify-content:center;align-items:flex-end;height:8.4cqh;margin-bottom:1cqh;color:#3a3a3c}
-.dlg-ic svg{width:7.4cqh;height:7.4cqh}
-[data-os="win"] .dlg-ic{color:#4cc2ff}
-.dlg-title{font-size:2.9cqh;font-weight:600;text-align:center;line-height:1.5;padding:0 1cqw;word-break:break-word}
-.dlg-text{font-size:2.1cqh;color:#555;text-align:center;line-height:1.65;padding:1.6cqh 2cqw 2.8cqh;word-break:break-word}
-.dlg-btns{display:flex;border-top:1px solid rgba(0,0,0,.12)}
-.dlg-btns button{flex:1;height:7.6cqh;font-size:2.7cqh;border:0;background:none;color:#007aff;font-weight:600}
-.dlg-btns button.deny{color:#3a3a3c;border-right:1px solid rgba(0,0,0,.12);transition:color .2s,font-size .2s}
-.dlg-btns button.deny.weak{color:#c2c2c8;font-size:2.1cqh}
-.dlg-btns button:active{background:rgba(0,0,0,.05)}
-[data-os="android"] .perm-dlg{border-radius:2.6cqh}
-[data-os="android"] .dlg-in{padding:3.2cqh 6cqw 0}
-[data-os="android"] .dlg-title{text-align:left;font-weight:700}
-[data-os="android"] .dlg-text{text-align:left;color:#666}
-[data-os="android"] .dlg-app{display:none}
-[data-os="android"] .dlg-ic{justify-content:flex-start;height:7.4cqh}
-[data-os="android"] .dlg-btns{border-top:0;justify-content:flex-end;padding:0 3cqw 1.6cqh}
-[data-os="android"] .dlg-btns button{flex:0 0 auto;width:19cqw;height:5.8cqh;font-size:2.3cqh;color:#1a73e8;border-radius:.9cqh}
-[data-os="android"] .dlg-btns button.deny{color:#757575;border-right:0}
-[data-os="win"] .perm-dlg{background:#2b2b2b;color:#f0f0f0;border-radius:1.8cqh;box-shadow:0 3cqh 10cqh rgba(0,0,0,.55)}
-[data-os="win"] .dlg-in{padding:3cqh 5.4cqw 0}
-[data-os="win"] .dlg-app{color:#9a9a9a}
-[data-os="win"] .dlg-title{text-align:left;font-weight:600}
-[data-os="win"] .dlg-text{text-align:left;color:#bcbcbc}
-[data-os="win"] .dlg-btns{border-top:1px solid #3f3f3f;justify-content:flex-end;padding:1.6cqh 3cqw 2cqh}
-[data-os="win"] .dlg-btns button{flex:0 0 auto;width:20cqw;height:5.8cqh;font-size:2.2cqh;border-radius:.9cqh;background:#404040;color:#f0f0f0;font-weight:400}
-[data-os="win"] .dlg-btns button.deny{border-right:0}
-[data-os="win"] .dlg-btns button.allow{background:#4cc2ff;color:#0b0b0b;font-weight:600}
-.perm-set{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:86cqw;background:#14161c;color:#eee;border-radius:2.6cqh;z-index:8;opacity:0;pointer-events:none;transition:opacity .35s;box-shadow:0 4cqh 14cqh rgba(0,0,0,.6)}
-.perm-set.on{opacity:1}
-.set-head{font-size:3cqh;font-weight:700;text-align:center;padding:3.2cqh 0 1cqh}
-.set-sub{font-size:2cqh;color:#8a8f9c;text-align:center;padding:0 4cqw 2.4cqh}
-.perm-set ul{list-style:none;margin:0;padding:0;border-top:1px solid #262a34}
-.perm-set li{display:flex;align-items:center;justify-content:space-between;gap:2cqw;padding:2.2cqh 5cqw;border-bottom:1px solid #262a34;font-size:2.3cqh;opacity:0;animation:pRow .5s ease forwards}
-.perm-set li:nth-child(1){animation-delay:.25s}
-.perm-set li:nth-child(2){animation-delay:.6s}
-.perm-set li:nth-child(3){animation-delay:.95s}
-.perm-set li:nth-child(4){animation-delay:1.7s}
-.perm-set li b{font-size:1.9cqh;color:#37c26e;font-weight:600;white-space:nowrap}
-.perm-set li.warn{color:#ff5566}
-.perm-set li.warn b{color:#ff5566}
-@keyframes pRow{from{opacity:0;transform:translateX(3cqw)}to{opacity:1;transform:none}}
-.set-end{font-size:2cqh;color:#9aa0ad;text-align:center;line-height:1.7;padding:2.6cqh 5cqw 3.4cqh;opacity:0;animation:pRow .8s ease 2.5s forwards;margin:0;word-break:break-word}
-.perm.glitch{animation:pGlitch .42s steps(2) both}
-@keyframes pGlitch{0%{filter:none}30%{filter:invert(1) hue-rotate(90deg)}55%{filter:none}80%{filter:invert(1)}100%{filter:none}}
-.perm-data{display:none}
+.apd{position:relative;width:100%;aspect-ratio:3/2;container-type:size;background:transparent;opacity:1;transition:opacity .6s;font-family:Roboto,"Noto Sans","PingFang SC","Microsoft YaHei",sans-serif}
+.apd.off{opacity:0}
+.apd-scrim{position:absolute;inset:0;background:rgba(0,0,0,.16);opacity:0;transition:opacity .2s}
+.apd-scrim.on{opacity:1}
+.apd-dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.94);width:86cqw;background:#fff;border-radius:.7cqh;box-shadow:0 .7cqh 3.6cqh rgba(0,0,0,.4),0 0 0 1px rgba(0,0,0,.05);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}
+.apd-dlg.pop{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.apd-body{padding:2.9cqh 4.4cqw 1.7cqh;display:flex;gap:2.6cqw;align-items:flex-start}
+.apd-ic{flex:0 0 auto;width:4.5cqh;height:4.5cqh;color:#8f8f8f}
+.apd-ic svg{width:100%;height:100%;display:none}
+.apd-title{font-size:2.55cqh;color:#212121;line-height:1.62;word-break:break-word;padding-top:.35cqh}
+.apd-btns{display:flex;justify-content:flex-end;gap:4.6cqw;padding:0 3cqw 2.2cqh}
+.apd-btns button{border:0;background:none;font-family:inherit;font-size:2.35cqh;font-weight:500;letter-spacing:.1cqh;color:#009688;padding:.7cqh 1.6cqw;cursor:pointer;border-radius:.4cqh}
+.apd-btns button.deny{color:#757575}
+.apd-btns button:active{background:rgba(0,0,0,.07)}
+.apd-data{display:none}
 </style>
 
 <script>
@@ -119,87 +33,63 @@
 function G(i){return document.getElementById(i)}
 function raw(i){var e=G(i);return e?String(e.textContent||""):""}
 function ok(s){s=String(s||"").trim();if(!s){return false}for(var i=0;i<s.length;i++){if(s.charCodeAt(i)===36){return false}}return true}
-var SRC=ok(raw("pSrc"))?raw("pSrc").trim():"系统服务";
-var END=ok(raw("pEnd"))?raw("pEnd").trim():"其实我不需要这些权限。看到你按下『允许』的样子，就已经够了。";
-var root=G("permRoot");
-var ua=navigator.userAgent||"";
-var os="win";
-if(ua.indexOf("Android")>=0){os="android"}
-else if(ua.indexOf("iPhone")>=0||ua.indexOf("iPad")>=0||ua.indexOf("iPod")>=0){os="ios"}
-root.setAttribute("data-os",os);
-G("dlgAppName").textContent=SRC;
-G("setAppName").textContent=SRC;
-G("setEnd").textContent=END;
-function clock(){var d=new Date(),h=d.getHours(),m=d.getMinutes();G("permClock").textContent=(h<10?"0":"")+h+":"+(m<10?"0":"")+m}
-clock();setInterval(clock,20000);
+var SRC=ok(raw("aSrc"))?raw("aSrc").trim():"系统服务";
+var END=ok(raw("aEnd"))?raw("aEnd").trim():"是否允许「它」读取你的回忆？";
+var root=G("apdRoot"),dlg=G("apdDlg");
 function vib(p){try{if(navigator.vibrate){navigator.vibrate(p)}}catch(e){}}
-var actx=null;
-function ding(){try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC){return}if(!actx){actx=new AC()}if(actx.state==="suspended"){actx.resume()}var o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime;o.type="sine";o.frequency.value=920;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.22,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.4);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+0.45)}catch(e){}}
-var GL="▓▒░█▄▀◤◢";
-function gl(s,p){var r="",i,c;for(i=0;i<s.length;i++){c=s.charAt(i);r+=(c!==" "&&c!=="，"&&c!=="。"&&Math.random()<p)?GL.charAt(Math.floor(Math.random()*GL.length)):c}return r}
-var A="『"+SRC+"』";
-var T={ios:[[A+"想访问您的相机","允许"+A+"在您使用应用时拍摄照片和录制视频"],[A+"想访问您的麦克风","允许"+A+"在您使用应用时录音"],[A+"想访问您的位置","允许"+A+"在您使用应用时获取您的位置信息"]],android:[["是否允许"+A+"拍摄照片和录制视频？","应用可能在后台使用相机，拒绝可能导致部分功能异常。"],["是否允许"+A+"录音？","应用可能在后台使用麦克风。"],["是否允许"+A+"获取此设备的位置信息？","位置信息属于敏感个人数据。"]],win:[["是否允许"+A+"使用摄像头？","Windows 安全中心检测到"+A+"正在尝试访问你的摄像头。"],["是否允许"+A+"使用麦克风？","Windows 安全中心检测到"+A+"正在尝试访问你的麦克风。"],["是否允许"+A+"访问你的位置？","Windows 安全中心检测到"+A+"正在尝试访问你的位置信息。"]]};
-var NAMES=["相机","麦克风","位置"];
-var ICONS=["icCam","icMic","icLoc"];
+var A="「"+SRC+"」";
+var PERMS=[["是否允许"+A+"拍摄照片和录制视频？",0],["是否允许"+A+"录制音频？",1],["是否允许"+A+"获取位置信息？",2]];
 var DENYMAX=[2,1,0];
-var DENYLBL={ios:"不允许",android:"不允许",win:"阻止"};
 var cur=0,att=0,phase="idle",cdt=null;
-function toast(s,d){var t=G("permToast");t.textContent=s;t.className="perm-toast on";setTimeout(function(){t.className="perm-toast"},d||1800)}
+function icons(n){var i,e;for(i=0;i<4;i++){e=G("apIc"+i);e.style.display=(i===n)?"":"none"}}
 function openDlg(){
-phase=(att>=DENYMAX[cur])?"count":"ask";
-var row=T[os][cur],k=Math.min(att,2);
-var dlg=G("permDlg");
-G("dlgTitle").textContent=att>0?gl(row[0],0.04+0.05*k):row[0];
-G("dlgText").textContent=att>0?gl(row[1],0.06+0.08*k):row[1];
-var i,ic;
-for(i=0;i<3;i++){ic=G(ICONS[i]);ic.style.display=(i===cur)?"":"none"}
-var dn=G("pDeny");
-dn.style.display=(att<DENYMAX[cur])?"":"none";
-dn.className="deny"+(att>0?" weak":"");
-dn.textContent=DENYLBL[os];
-G("pAllow").textContent="允许";
-G("permDim").className="perm-dim on";
-dlg.className="perm-dlg";
+var force=(att>=DENYMAX[cur]);
+phase=force?"count":"ask";
+var t=PERMS[cur][0];
+if(force){t=t.slice(0,t.length-1)+"。"}
+icons(PERMS[cur][1]);
+G("apdTitle").textContent=t;
+G("apdDeny").style.display=force?"none":"";
+G("apdAllow").textContent="允许";
+G("apdScrim").className="apd-scrim on";
+dlg.className="apd-dlg";
 void dlg.offsetWidth;
-dlg.className="perm-dlg pop"+(phase==="count"?" shake":"");
-ding();vib(phase==="count"?[60,50,60]:30);
-if(phase==="count"){
+dlg.className="apd-dlg pop";
+if(force){
 var n=3;
-G("pAllow").textContent="允许（"+n+"）";
-cdt=setInterval(function(){n--;if(n<=0){clearInterval(cdt);cdt=null;doAllow()}else{G("pAllow").textContent="允许（"+n+"）"}},750)
+G("apdAllow").textContent="允许（"+n+"）";
+cdt=setInterval(function(){n--;if(n<=0){clearInterval(cdt);cdt=null;allow()}else{G("apdAllow").textContent="允许（"+n+"）"}},700)
 }}
-function closeDlg(){G("permDlg").className="perm-dlg out";setTimeout(function(){G("permDlg").className="perm-dlg"},280)}
-function doAllow(){
-if(phase!=="ask"&&phase!=="count"){return}
-if(cdt){clearInterval(cdt);cdt=null}
-phase="grant";
-toast("已允许"+A+"使用"+NAMES[cur]);
-closeDlg();
-cur+=1;
-if(cur>=3){setTimeout(finale,1000)}
-else{att=0;setTimeout(openDlg,1200)}
+function finalDlg(){
+phase="final";
+G("apdTitle").textContent=END;
+icons(3);
+G("apdDeny").style.display="none";
+G("apdAllow").textContent="允许";
+dlg.className="apd-dlg";
+void dlg.offsetWidth;
+dlg.className="apd-dlg pop";
+vib(120)
 }
-function doDeny(){
+function allow(){
+if(phase!=="ask"&&phase!=="count"&&phase!=="final"){return}
+if(cdt){clearInterval(cdt);cdt=null}
+if(phase==="final"){phase="end";dlg.className="apd-dlg";root.className="apd off";return}
+phase="grant";
+dlg.className="apd-dlg";
+cur+=1;
+if(cur===3){setTimeout(finalDlg,700)}
+else{att=0;setTimeout(openDlg,700)}
+}
+function deny(){
 if(phase!=="ask"){return}
 phase="deny";
 att+=1;
-toast("权限请求被拒绝");
-closeDlg();
-setTimeout(openDlg,att>=DENYMAX[cur]?450:850)
+dlg.className="apd-dlg";
+setTimeout(openDlg,600)
 }
-G("pAllow").onclick=function(){if(phase==="ask"||phase==="count"){doAllow()}};
-G("pDeny").onclick=function(){if(phase==="ask"){doDeny()}};
-function finale(){
-root.className="perm glitch";
-vib([80,60,140]);
-setTimeout(function(){root.className="perm done"},430);
-setTimeout(function(){
-G("permDlg").className="perm-dlg";
-G("permSet").className="perm-set on";
-ding();setTimeout(ding,280);setTimeout(ding,620)
-},440)
-}
-setTimeout(function(){toast("正在进行设备安全验证…",1600)},600);
-setTimeout(function(){openDlg()},2500)
+G("apdAllow").onclick=function(){if(phase==="ask"||phase==="count"||phase==="final"){allow()}};
+G("apdDeny").onclick=function(){if(phase==="ask"){deny()}};
+setTimeout(function(){openDlg()},1500)
 })();
 </script>
