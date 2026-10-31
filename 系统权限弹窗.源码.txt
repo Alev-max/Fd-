@@ -1,45 +1,128 @@
+<!-- 系统权限弹窗 · 纯 AOSP 6.0 原生权限对话框演出组件 -->
+<!-- 视觉严格对齐原生 Material Light 弹窗：极简白卡、左对齐 medium 标题、右下角青色文字按钮；无图标、无申请头、无分隔线、无复选框 -->
+<!-- 行为流程：开场（或恢复上次会话）→ 依次索要 26 项真实权限，点「取消」立刻弹回，可拒绝次数递减直至只剩「允许」并倒计时强制授权，节奏越来越快 → 最后一弹「调用前置摄像头拍照」 → 快门声＋白闪＋「照片已保存到相册」「正在上传…」 → 弹出「应用信息」卡：清除数据/清除缓存均告失败，卸载只会抖动，点「强制停止」才肯整体淡出 -->
+<!-- 参数：$来源$ = 弹窗中显示的应用名（默认 系统服务），示例 <来源>帷幕之后</来源> -->
+<!-- 参数：$结语$ = 可选，替换最后一弹“调用前置摄像头拍照”的标题文字（默认 是否允许「来源」调用前置摄像头拍照？） -->
+<!-- 参数：$清单$ = 可选，用「、」分隔的权限名，整体替换默认的 26 项权限序列，示例 <清单>读取通讯录、访问相册、获取位置信息</清单> -->
+<!-- 持久化：经桥接函数 saveToLocal／readFromLocal（iframe 下 await，不可用时回退 localStorage）记录两枚键——apdSeen（started／done，标记上次会话是否走完；中断过的会话再次进入会提示“正在恢复权限状态”）、apdShots（累计拍照张数，第二轮起 Toast 显示“第 N 张”）。完整走完一遍后再次进入会以更快的节奏重播 -->
+<!-- 键盘支持：弹窗期间 Escape＝点「取消」、Enter＝点「允许」（每次弹窗自动把焦点落在「允许」上，空格亦可触发）；Tab 聚焦时显示青色焦点环 —— -->
 <div class="apd" id="apdRoot">
 <div class="apd-scrim" id="apdScrim"></div>
 <div class="apd-flash" id="apdFlash"></div>
-<div class="apd-toast" id="apdToast">照片已保存到相册</div>
-<div class="apd-dlg" id="apdDlg">
-<div class="apd-head"><span class="apd-appic"></span><span class="apd-appnm"><b id="apdAppName">系统服务</b>正在申请权限</span></div>
-<div class="apd-hr"></div>
-<div class="apd-body">
-<span class="apd-ic"><svg id="apIc0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h3l1.6-2.4h6.8L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="12.6" r="3.6"/></svg><svg id="apIc1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg><svg id="apIc2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.4"/></svg><svg id="apIc3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="7.8" r="3.6"/><path d="M4.8 20c1.2-3.5 4-5.2 7.2-5.2s6 1.7 7.2 5.2"/></svg><svg id="apIc4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="12" rx="1.2"/><path d="M4 17v3.5L8.5 17"/></svg><svg id="apIc5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h3l1.6-2.4h6.8L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><path d="M15.5 12a3.5 3.5 0 1 1-3.5-3.5"/><path d="M15.8 8.7v2.2h-2.2"/></svg></span>
-<div class="apd-txt"><div class="apd-title" id="apdTitle"></div><div class="apd-sub" id="apdSub"></div></div>
+<div class="apd-toast" id="apdToast" role="status" aria-live="polite"></div>
+<div class="apd-dlg" id="apdDlg" role="dialog" aria-modal="true" aria-labelledby="apdTitle">
+<div class="apd-body"><div class="apd-title" id="apdTitle"></div></div>
+<div class="apd-btns"><button type="button" class="deny" id="apdDeny">取消</button><button type="button" class="allow" id="apdAllow">允许</button></div>
 </div>
-<div class="apd-hr"></div>
-<div class="apd-btns"><button class="deny" id="apdDeny">取消</button><button class="allow" id="apdAllow">允许</button></div>
+<div class="apd-info" id="apdInfo" role="dialog" aria-modal="true" aria-labelledby="infName">
+<div class="inf-head"><span class="inf-ic"></span><span class="inf-tx"><b id="infName">系统服务</b><i>版本 9.9.9 · 系统应用</i><i id="infPerm">权限状态未知</i></span></div>
+<div class="inf-hr"></div>
+<div class="inf-row" id="infData"><span>清除数据</span><em>0.00 KB 已占用</em></div>
+<div class="inf-row" id="infCache"><span>清除缓存</span><em>0.00 KB</em></div>
+<div class="inf-hr"></div>
+<div class="inf-btns"><button type="button" id="infStop">强制停止</button><button type="button" id="infUn" class="un">卸载</button></div>
 </div>
-<div class="apd-data"><span id="aSrc">$来源$</span><span id="aEnd">$结语$</span></div>
+<div class="apd-data"><span id="aSrc">$来源$</span><span id="aEnd">$结语$</span><span id="aList">$清单$</span></div>
 </div>
 <style>
-.apd{position:relative;width:100%;aspect-ratio:3/2;container-type:size;background:transparent;opacity:1;transition:opacity .6s;font-family:Roboto,"Noto Sans","PingFang SC","Microsoft YaHei",sans-serif}
+/* ============================================================
+   系统权限弹窗 · 样式表
+   视觉规格严格对照 AOSP 6.0 原生权限对话框（Material Light 主题）：
+   · 对话框：纯白卡片，无图标、无标题栏、无分隔线、无复选框
+   · 标题：16sp、medium 字重、黑色 87% 不透明度，左对齐，行高 1.45
+   · 按钮：右对齐文字按钮，14sp、medium、强调色 teal 500 #009688
+   · 按钮：最小宽 64dp、高 36dp、左右内边距 16dp，48dp 触控目标
+   · 按压反馈：Material 水波纹 + 12% 沉浸色背景，无涟漪时退化为色块
+   · 遮罩：黑色 30% 透明度；卡片投影 = 大阴影（24dp 海拔）+ 接触阴影
+   · 结尾「应用信息」卡：设置→应用详情 的迷你版；图标 44dp 圆形；
+     「卸载」按钮用 MD red 700 #d32f2f，「强制停止」用 87% 黑
+   · 尺寸策略：px 先行作旧浏览器回退，cq 单位随容器等比缩放（3:2 舞台）
+   · 兼容性：-webkit-box 供老安卓 WebView 弹性布局；@supports 补
+     容器查询不支持时的兜底；媒体查询覆盖减少动态/高对比度/窄屏
+   ============================================================ */
+.apd{position:relative;width:100%;aspect-ratio:3/2;container-type:size;background:transparent;opacity:1;transition:opacity .55s ease;font-family:Roboto,"Droid Sans","Droid Sans Fallback","Noto Sans","Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .apd.off{opacity:0}
-.apd-scrim{position:absolute;inset:0;background:rgba(0,0,0,.16);opacity:0;transition:opacity .2s}
-.apd-scrim.on{opacity:1}
+.apd *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.apd,.apd *{-webkit-user-select:none;user-select:none}
+.apd button{-webkit-user-select:none;user-select:none;-webkit-appearance:none;appearance:none;background:none;border:0;margin:0;padding:0;font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
+.apd button::-moz-focus-inner{border:0;padding:0;margin:0}
+.apd button:focus{outline:none}
+.apd button:focus-visible{outline:2px solid rgba(0,150,136,.55);outline-offset:2px}
+/* —— 遮罩：黑 30%，随第一弹淡入，直到「强制停止」才熄灭；
+     遮罩可点击：可拒绝弹窗点遮罩＝点「取消」（AOSP 可取消行为），
+     强制弹窗/最后一弹点遮罩无效，拒绝被吞掉 —— */
+.apd-scrim{position:absolute;inset:0;background:rgba(0,0,0,.3);opacity:0;transition:opacity .18s ease;pointer-events:none}
+.apd-scrim.on{opacity:1;pointer-events:auto}
+/* —— 快门白闪 —— */
 .apd-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
-.apd-flash.go{animation:apFlash .3s ease}
-@keyframes apFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
-.apd-toast{position:absolute;left:50%;bottom:15cqh;transform:translateX(-50%);background:rgba(50,50,50,.92);color:#fff;font-size:2cqh;padding:1.5cqh 3.2cqw;border-radius:.8cqh;opacity:0;transition:opacity .25s;z-index:9;white-space:nowrap}
+.apd-flash.go{animation:apFlash .3s ease-out}
+@keyframes apFlash{0%{opacity:0}28%{opacity:1}100%{opacity:0}}
+/* —— 系统 Toast：安卓 6.0 原生规格——#323232 底、白字 14sp、
+     水平内边距 16dp、圆角 4dp、海拔 4dp 微投影，居中悬挂于舞台下缘 —— */
+.apd-toast{position:absolute;left:50%;bottom:13cqh;transform:translateX(-50%);background:rgba(43,43,43,.95);color:#f5f5f5;font-size:13px;font-size:2.05cqh;padding:8px 16px;padding:1.4cqh 3cqw;border-radius:3px;border-radius:.55cqh;opacity:0;transition:opacity .22s ease;z-index:9;white-space:nowrap;letter-spacing:.02em;box-shadow:0 3px 10px rgba(0,0,0,.25);pointer-events:none}
 .apd-toast.on{opacity:1}
-.apd-dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.94);width:86cqw;background:#fff;border-radius:.7cqh;box-shadow:0 .6cqh 3.2cqh rgba(0,0,0,.38),0 0 0 1px rgba(0,0,0,.05);opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}
-.apd-dlg.pop{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
-.apd-head{display:flex;align-items:center;gap:1.8cqw;padding:2.2cqh 4.2cqw 1.6cqh}
-.apd-appic{width:3.4cqh;height:3.4cqh;border-radius:24%;background:linear-gradient(135deg,#3b82c4,#7fb1e6);flex:0 0 auto}
-.apd-appnm{font-size:1.95cqh;color:#9a9a9a}
-.apd-appnm b{color:#333;font-weight:500;margin-right:.8cqw}
-.apd-hr{height:1px;background:#f2f2f2}
-.apd-body{padding:2.4cqh 4.2cqw 2.2cqh;display:flex;gap:2.4cqw;align-items:flex-start}
-.apd-ic{width:4.3cqh;height:4.3cqh;color:#8f8f8f;flex:0 0 auto}
-.apd-ic svg{width:100%;height:100%;display:none}
-.apd-title{font-size:2.5cqh;color:#212121;line-height:1.55;word-break:break-word}
-.apd-sub{font-size:1.85cqh;color:#9e9e9e;line-height:1.5;margin-top:.9cqh;word-break:break-word}
-.apd-btns{display:flex}
-.apd-btns button{flex:1;height:6.8cqh;border:0;background:none;font-family:inherit;font-size:2.35cqh;font-weight:500;letter-spacing:.08cqh;color:#009688;cursor:pointer}
-.apd-btns button.deny{border-right:1px solid #f2f2f2}
-.apd-btns button:active{background:rgba(0,0,0,.05)}
+/* —— 权限对话框本体：300dp 白卡、3dp 圆角；海拔 24dp =
+     大阴影 0 6px 22px ＋ 接触阴影 0 1px 3px（Material 双层投影写法）—— */
+.apd-dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:300px;width:86cqw;max-width:96cqw;background:#fff;border-radius:3px;border-radius:.45cqh;box-shadow:0 6px 22px rgba(0,0,0,.32),0 1px 3px rgba(0,0,0,.14);opacity:0;pointer-events:none;transition:opacity .16s ease;z-index:8}
+.apd-dlg.pop{opacity:1;pointer-events:auto}
+/* —— 正文：左右 24dp、上 22dp、下 10dp（AOSP 对话框内容边距）—— */
+.apd-body{padding:22px 24px 10px;padding:3.1cqh 4.4cqw 1.4cqh}
+.apd-title{font-size:16px;font-size:2.55cqh;font-weight:500;color:rgba(0,0,0,.87);line-height:1.45;letter-spacing:0;word-break:break-word;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+/* —— 按钮排：右对齐（老安卓 WebView 走 -webkit-box 弹性盒），
+     底部留 10dp；文字按钮最小宽 64dp、高 36dp、两钮间距 8dp —— */
+.apd-btns{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:horizontal;-webkit-box-pack:end;-webkit-flex-pack:end;justify-content:flex-end;padding:0 8px 10px;padding:0 1.4cqw 1.6cqh}
+.apd-btns button{position:relative;overflow:hidden;min-width:64px;min-width:17cqw;height:36px;height:5cqh;padding:0 16px;padding:0 2.9cqw;margin-left:8px;margin-left:1.4cqw;font-size:14px;font-size:2.3cqh;font-weight:500;letter-spacing:.1px;letter-spacing:.11cqh;color:#009688;border-radius:2px;border-radius:.4cqh;-webkit-transition:background .12s ease;transition:background .12s ease}
+.apd-btns button.deny{color:#009688}
+.apd-btns button:active{background:rgba(0,150,136,.12);transition:none;-webkit-transition:none}
+@media (hover:hover){.apd-btns button:hover{background:rgba(0,150,136,.07)}}
+/* —— Material 水波纹：脚本按点击坐标放置圆形 span，currentColor 自动
+     取按钮文字色（teal），0.55s 内从 0 放大到 2.5 倍并淡出；
+     键盘触发时落点退化为按钮圆心 —— */
+.rp{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:apRip .55s ease-out;pointer-events:none}
+@keyframes apRip{0%{transform:scale(0);opacity:.28}100%{transform:scale(2.5);opacity:0}}
+/* —— 应用信息卡：设置→应用详情 的迷你版；44dp 圆形图标＋两行说明，
+     「清除数据」「清除缓存」为设置页风格的 44dp 操作行；
+     「卸载」用 MD red 700 #d32f2f，「强制停止」用 87% 黑 —— */
+.apd-info{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:300px;width:86cqw;max-width:96cqw;background:#fff;border-radius:3px;border-radius:.45cqh;box-shadow:0 10px 30px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .16s ease;z-index:8}
+.apd-info.pop{opacity:1;pointer-events:auto}
+.inf-head{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:horizontal;-webkit-box-align:center;-webkit-align-items:center;align-items:center;padding:16px;padding:2.6cqh 3cqw}
+.inf-ic{position:relative;flex:none;width:44px;width:13cqh;height:44px;height:13cqh;border-radius:50%;background:linear-gradient(135deg,#9e9e9e,#616161);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.inf-ic::after{content:"系统";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:10px;font-size:1.6cqh;font-weight:500;color:rgba(255,255,255,.92);letter-spacing:.5px}
+.inf-tx{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;margin-left:14px;margin-left:2.4cqw;min-width:0}
+.inf-tx b{font-size:15px;font-size:2.4cqh;font-weight:500;color:rgba(0,0,0,.87);line-height:1.3;word-break:break-all}
+.inf-tx i{font-style:normal;font-size:12px;font-size:1.9cqh;color:rgba(0,0,0,.54);line-height:1.5}
+.inf-hr{height:1px;margin:0 14px;margin:0 2.4cqw;background:rgba(0,0,0,.12)}
+/* —— 设置页风格的两行操作行：清除数据 / 清除缓存（48dp 触控高）—— */
+.inf-row{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:horizontal;-webkit-box-align:center;-webkit-align-items:center;align-items:center;-webkit-box-pack:justify;-webkit-flex-pack:justify;justify-content:space-between;min-height:44px;min-height:7cqh;padding:4px 16px;padding:.7cqh 3cqw;cursor:pointer;-webkit-transition:background .12s ease;transition:background .12s ease}
+.inf-row:active{background:rgba(0,0,0,.08)}
+.inf-row span{font-size:14px;font-size:2.2cqh;font-weight:400;color:rgba(0,0,0,.87)}
+.inf-row em{font-style:normal;font-size:12px;font-size:1.9cqh;color:rgba(0,0,0,.54)}
+.inf-btns{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:horizontal;padding:6px 4px;padding:1cqh .8cqw}
+.inf-btns button{position:relative;overflow:hidden;-webkit-box-flex:1;-webkit-flex:1 1 0;flex:1 1 0;height:38px;height:6cqh;font-size:13px;font-size:2.1cqh;font-weight:500;color:#333;-webkit-transition:background .12s ease;transition:background .12s ease}
+.inf-btns button+button{border-left:1px solid rgba(0,0,0,.12)}
+.inf-btns button.un{color:#d32f2f}
+.inf-btns button:active{background:rgba(0,0,0,.08);transition:none;-webkit-transition:none}
+/* —— 卸载失败：整卡左右抖动（保持 -50% 居中基准）—— */
+.apd-info.shake{animation:apShake .4s ease}
+@keyframes apShake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 7px),-50%)}40%{transform:translate(calc(-50% + 6px),-50%)}60%{transform:translate(calc(-50% - 4px),-50%)}80%{transform:translate(calc(-50% + 3px),-50%)}}
+/* —— 清除数据行失败：只做纯横移抖动（无居中基准）—— */
+.inf-row.shake{animation:apShakeX .4s ease}
+@keyframes apShakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+/* —— 无障碍与环境适配 —— */
+@media (prefers-reduced-motion:reduce){.apd-dlg,.apd-info,.apd-scrim,.apd-toast{transition:opacity .01s}.apd{transition:opacity .2s}.apd-flash.go{animation:none;opacity:1}.rp{animation:none;opacity:0}.apd-info.shake,.inf-row.shake{animation:none}}
+@media (prefers-reduced-transparency:reduce){.apd-scrim{background:rgba(0,0,0,.75)}.apd-toast{background:#2b2b2b}.apd-dlg,.apd-info{box-shadow:0 3px 8px rgba(0,0,0,.5)}}
+@media (prefers-contrast:more){.apd-scrim{background:rgba(0,0,0,.6)}.apd-title{color:#000}.inf-tx i{color:rgba(0,0,0,.8)}}
+@media (forced-colors:active){.apd-dlg,.apd-info{border:1px solid CanvasText}.apd-btns button,.inf-btns button{border:1px solid CanvasText}.inf-hr,.inf-btns button+button{background:CanvasText;border-left:1px solid CanvasText}}
+@media (max-width:270px){.apd-body{padding:14px 14px 6px}.apd-btns button{min-width:52px;padding:0 10px}.inf-head{padding:10px}.inf-ic{width:36px;height:36px}.inf-btns button{font-size:12px}}
+/* —— 触屏设备：按钮抬到 40dp，贴近 48dp 触控目标标准 —— */
+@media (any-pointer:coarse){.apd-btns button{height:40px;height:5.6cqh}.inf-btns button{height:42px;height:6.6cqh}}
+/* —— 容器查询不支持时的兜底（老 WebView）：对话框改用百分比定位，
+     舞台给固定高度，保证 cq 单位失效后布局仍然成立 —— */
+@supports not (width:1cqw){.apd-dlg,.apd-info{left:7%;transform:none;width:86%;max-width:94%}.apd-toast{bottom:10%}}
+@supports not (aspect-ratio:3/2){.apd{height:400px;max-height:82vh}}
+/* —— 高分屏：分隔线压到 0.5 物理像素，数字用等宽字形防跳动 —— */
+@media (min-resolution:2dppx){.inf-hr{height:.5px}}
+.inf-row em,.inf-tx i{font-variant-numeric:tabular-nums}
 .apd-data{display:none}
 </style>
 
@@ -52,70 +135,178 @@ function ok(s){s=String(s||"").trim();if(!s){return false}for(var i=0;i<s.length
 var SRC=ok(raw("aSrc"))?raw("aSrc").trim():"系统服务";
 var A="「"+SRC+"」";
 var FINAL=ok(raw("aEnd"))?raw("aEnd").trim():"是否允许"+A+"调用前置摄像头拍照？";
-var root=G("apdRoot"),dlg=G("apdDlg");
+var LISTRAW=ok(raw("aList"))?raw("aList").trim():"";
+if(LISTRAW){LISTRAW=LISTRAW.split("、").join(",");LISTRAW=LISTRAW.split("，").join(",")}
+var DEFN=["拍摄照片和录制视频","录制音频","获取设备的位置信息","在后台获取位置信息","访问您的通讯录","读取您的短信","发送和查看短信","访问您的通话记录","拨打电话和管理通话","访问设备上的照片和文件","更改或删除设备上的文件","访问您的日历","读取您的剪贴板内容","读取通知内容","修改系统设置","显示在其他应用上层","开机自动启动","使用身体传感器","忽略电池优化","更改网络连接","连接配对的蓝牙设备","使用NFC","读取手机状态和身份","使用辅助功能","安装未知应用","激活设备管理器"];
+function buildQ(arr){var out=[],i;for(i=0;i<arr.length;i++){var nm=String(arr[i]||"").trim();if(nm){out.push("是否允许"+A+nm+"？")}}return out}
+var P=LISTRAW?buildQ(LISTRAW.split(",")):[];
+if(P.length===0){P=buildQ(DEFN)}
+var root=G("apdRoot"),dlg=G("apdDlg"),info=G("apdInfo");
+var cur=0,att=0,un=0,phase="idle",cdt=null,FAST=false,SHOTS=0;
 function vib(p){try{if(navigator.vibrate){navigator.vibrate(p)}}catch(e){}}
-G("apdAppName").textContent=SRC;
-var PERMS=[["是否允许"+A+"拍摄照片和录制视频？","该应用可能会在后台拍摄照片",0],["是否允许"+A+"录制音频？","该应用可能会在后台录制音频",1],["是否允许"+A+"获取设备的位置信息？","位置信息属于个人敏感信息",2],["是否允许"+A+"访问您的通讯录？","该应用可读取您的联系人信息",3],["是否允许"+A+"读取您的短信？","该应用可读取并删除您的短信",4]];
-var DENYMAX=[2,1,1,1,0];
-var cur=0,att=0,phase="idle",cdt=null;
-function icons(n){var i,e;for(i=0;i<6;i++){e=G("apIc"+i);e.style.display=(i===n)?"":"none"}}
 function pop(){dlg.className="apd-dlg";void dlg.offsetWidth;dlg.className="apd-dlg pop"}
+function popInfo(){info.className="apd-info";void info.offsetWidth;info.className="apd-info pop"}
+var nts=[];
+function note(s,at,dur){var t=G("apdToast"),i;for(i=0;i<nts.length;i++){clearTimeout(nts[i])}nts=[];t.className="apd-toast";void t.offsetWidth;t.textContent=s;nts.push(setTimeout(function(){t.className="apd-toast on"},at||30));nts.push(setTimeout(function(){t.className="apd-toast"},(at||30)+(dur||1900)))}
+function rip(e){try{
+if(!e){return}
+var b=e.currentTarget;
+if(!b){return}
+var rc=b.getBoundingClientRect();
+var x=rc.left+rc.width*0.5,y=rc.top+rc.height*0.5;
+if(e.changedTouches&&e.changedTouches[0]){x=e.changedTouches[0].clientX;y=e.changedTouches[0].clientY}
+else{if(typeof e.clientX==="number"&&(e.clientX||e.clientY)){x=e.clientX;y=e.clientY}}
+var w=Math.max(b.offsetWidth,b.offsetHeight);
+var r=document.createElement("span");
+r.className="rp";
+r.style.width=w+"px";
+r.style.height=w+"px";
+r.style.left=(x-rc.left-w*0.5)+"px";
+r.style.top=(y-rc.top-w*0.5)+"px";
+b.appendChild(r);
+setTimeout(function(){if(r.parentNode){r.parentNode.removeChild(r)}},620)
+}catch(e2){}}
+var ACG=null;
+function ac(){try{if(ACG){return ACG}var AC=window.AudioContext||window.webkitAudioContext;if(!AC){return null}ACG=new AC();return ACG}catch(e){return null}}
+function snd(){try{
+var c=ac();
+if(!c){return}
+try{if(c.state==="suspended"&&c.resume){c.resume()}}catch(e1){}
+var t0=c.currentTime,i;
+function clk(dt,f,g0){var o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=f;g.gain.setValueAtTime(g0,t0+dt);g.gain.exponentialRampToValueAtTime(0.0001,t0+dt+0.05);o.connect(g);g.connect(c.destination);o.start(t0+dt);o.stop(t0+dt+0.06)}
+var b=c.createBuffer(1,1600,c.sampleRate);
+var d=b.getChannelData(0);
+for(i=0;i<1600;i++){d[i]=(Math.random()*2-1)*(1-i*0.000625)*(1-i*0.000625)}
+var s1=c.createBufferSource();
+s1.buffer=b;
+var g1=c.createGain();
+g1.gain.value=0.22;
+s1.connect(g1);g1.connect(c.destination);s1.start(t0);
+var s2=c.createBufferSource();
+s2.buffer=b;
+var g2=c.createGain();
+g2.gain.value=0.22;
+s2.connect(g2);g2.connect(c.destination);s2.start(t0+0.09);
+clk(0,2100,0.12);
+clk(0.09,1500,0.1)
+}catch(e){}}
+async function put(k,v){try{if(typeof saveToLocal==="function"){await saveToLocal(k,v);return}}catch(e){}try{window.localStorage.setItem(k,v)}catch(e){}}
+async function take(k){try{if(typeof readFromLocal==="function"){var v=await readFromLocal(k);if(v!==null&&v!==undefined&&String(v)!==""){return String(v)}}}catch(e){}try{return String(window.localStorage.getItem(k)||"")}catch(e){return ""}}
+function denyMaxFor(i){return i<4?2:(i<10?1:0)}
+function reaskDelay(){var b=att<=1?620:(att===2?380:220);return Math.round(b+Math.random()*90)}
+function gapDelay(){var b=FAST?0.62:1;var m=cur<4?760:(cur<9?520:(cur<14?380:260));return Math.round(m*b+Math.random()*70)}
 function openDlg(){
-var force=(att>=DENYMAX[cur]);
+var force=(att>=denyMaxFor(cur));
 phase=force?"count":"ask";
-var t=PERMS[cur][0];
+var t=P[cur];
 if(force){t=t.slice(0,t.length-1)+"。"}
 G("apdTitle").textContent=t;
-G("apdSub").textContent=PERMS[cur][1];
-icons(PERMS[cur][2]);
 G("apdDeny").style.display=force?"none":"";
 G("apdAllow").textContent="允许";
 G("apdScrim").className="apd-scrim on";
 pop();
-if(force){
-var n=3;
+if(force){cdStart()}
+try{G("apdAllow").focus({preventScroll:true})}catch(e3){try{G("apdAllow").focus()}catch(e4){}}}
+function cdStart(){
+var n=(cur>=12)?2:3;
+var iv=(cur>=12)?520:700;
 G("apdAllow").textContent="允许（"+n+"）";
-cdt=setInterval(function(){n--;if(n<=0){clearInterval(cdt);cdt=null;allow()}else{G("apdAllow").textContent="允许（"+n+"）"}},700)
-}}
+vib(18);
+cdt=setInterval(function(){n--;if(n<=0){clearInterval(cdt);cdt=null;allow()}else{G("apdAllow").textContent="允许（"+n+"）";vib(12)}},iv)}
 function finalDlg(){
 phase="final";
 G("apdTitle").textContent=FINAL;
-G("apdSub").textContent="拍到的照片将用于身份验证";
-icons(5);
 G("apdDeny").style.display="none";
 G("apdAllow").textContent="允许";
 pop();
-vib(120)
-}
+vib(120)}
 function shot(){
+SHOTS+=1;
 phase="shot";
 dlg.className="apd-dlg";
-vib(25);
+vib([15,40,15]);
+snd();
 G("apdFlash").className="apd-flash go";
-setTimeout(function(){G("apdFlash").className="apd-flash"},420);
-setTimeout(function(){G("apdToast").className="apd-toast on"},480);
-setTimeout(function(){G("apdToast").className="apd-toast"},2500);
-setTimeout(function(){root.className="apd off"},3000)
-}
+setTimeout(function(){G("apdFlash").className="apd-flash"},430);
+var msg=(SHOTS>1)?("照片已保存到相册（第"+SHOTS+"张）"):"照片已保存到相册";
+note(msg,500,1500);
+setTimeout(function(){note("正在上传…",120,1350)},2150);
+setTimeout(function(){showInfo()},3700)}
+function showInfo(){
+phase="info";
+G("infName").textContent=SRC;
+G("infPerm").textContent="已授予 "+P.length+" 项权限 · 刚刚";
+popInfo()}
+function fin(){
+phase="end";
+put("apdSeen","done");
+put("apdShots",String(SHOTS));
+G("apdScrim").className="apd-scrim";
+info.className="apd-info";
+root.className="apd off"}
 function allow(){
 if(phase!=="ask"&&phase!=="count"&&phase!=="final"){return}
 if(cdt){clearInterval(cdt);cdt=null}
 if(phase==="final"){shot();return}
 phase="grant";
 dlg.className="apd-dlg";
+vib(8);
 cur+=1;
-if(cur===PERMS.length){setTimeout(finalDlg,700)}
-else{att=0;setTimeout(openDlg,700)}
-}
+if(cur===P.length){setTimeout(finalDlg,650)}
+else{att=0;setTimeout(openDlg,gapDelay())}}
 function deny(){
 if(phase!=="ask"){return}
 phase="deny";
 att+=1;
+vib(20+att*15);
 dlg.className="apd-dlg";
-setTimeout(openDlg,600)
-}
-G("apdAllow").onclick=function(){if(phase==="ask"||phase==="count"||phase==="final"){allow()}};
-G("apdDeny").onclick=function(){if(phase==="ask"){deny()}};
-setTimeout(function(){openDlg()},1500)
-})();
+setTimeout(openDlg,reaskDelay())}
+function onTap(el,fn){if(!el){return}function h(e){try{var c0=ac();if(c0&&c0.resume){c0.resume()}}catch(e5){}rip(e);fn(e)}el.addEventListener("click",h)}
+onTap(G("apdAllow"),function(){if(phase==="ask"||phase==="count"||phase==="final"){allow()}});
+onTap(G("apdDeny"),function(){if(phase==="ask"){deny()}});
+onTap(G("infStop"),function(){
+if(phase!=="info"){return}
+phase="stop";
+vib(90);
+note("进程无法停止，服务仍在运行",30,1700);
+setTimeout(fin,1850)});
+onTap(G("infUn"),function(){
+if(phase!=="info"){return}
+un+=1;
+vib(60);
+info.className="apd-info pop shake";
+setTimeout(function(){if(phase==="info"){info.className="apd-info pop"}},430);
+if(un===1){note("卸载失败：系统应用无法卸载",30,1900)}
+else{if(un===2){note("卸载失败：此应用是设备管理器",30,1900)}
+else{note("卸载请求已被拒绝",30,1900)}}});
+onTap(G("infData"),function(){
+if(phase!=="info"){return}
+vib(50);
+G("infData").className="inf-row shake";
+setTimeout(function(){if(phase==="info"){G("infData").className="inf-row"}},430);
+note("无法清除应用数据：数据正被系统占用",30,1900)});
+var cw=0;
+onTap(G("infCache"),function(){
+if(phase!=="info"){return}
+vib(20);
+cw+=1;
+if(cw===1){note("已清除缓存，释放 0.00 KB",30,1500)}
+else{note("没有可清除的缓存",30,1500)}});
+G("apdScrim").addEventListener("click",function(){
+if(phase==="ask"){deny();return}
+if(phase==="count"||phase==="final"||phase==="shot"){vib(30)}});
+document.addEventListener("visibilitychange",function(){
+if(document.visibilityState==="visible"){if(phase==="count"||phase==="final"||phase==="info"){vib(30)}}});
+document.addEventListener("keydown",function(e){var k=(e&&e.key)?e.key:"";if(k==="Escape"&&phase==="ask"){deny();return}if(k==="Enter"&&(phase==="ask"||phase==="count"||phase==="final")){allow()}});
+async function boot(){
+var seen=await take("apdSeen");
+var sv=await take("apdShots");
+var n=parseInt(sv,10);
+SHOTS=isNaN(n)?0:n;
+FAST=(seen==="done");
+if(seen==="started"){setTimeout(function(){note("检测到上次会话未正常退出，正在恢复权限状态…",250,2400)},150)}
+put("apdSeen","started");
+setTimeout(openDlg,FAST?420:1300)}
+boot();
+})()
 </script>
